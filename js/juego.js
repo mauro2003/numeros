@@ -1,11 +1,9 @@
 // js/juego.js
-import { cargarRanking } from './ranking.js';
 import { mostrarPantallaSecreta } from './ui.js';
 import { db } from './firebase.js';
 
 let secreto, maxNum, intCount, adivinado, tiempoRest, timer;
 
-// Inicializa el juego cuando el usuario elige nivel
 function iniciarJuego() {
   const nom = document.getElementById('nombreJugador').value.trim();
   if (!nom) return alert('Ingresá tu nombre');
@@ -13,30 +11,30 @@ function iniciarJuego() {
   if (!nivel) return;
 
   clearInterval(timer);
-  if (nivel === 'facil') { maxNum = 10; tiempoRest = 60; }
-  else if (nivel === 'medio') { maxNum = 20; tiempoRest = 60; }
-  else if (nivel === 'dificil') { maxNum = 50; tiempoRest = 60; }
-  else { maxNum = 100; tiempoRest = 30; }
+  if (nivel === 'facil')       { maxNum = 10;  tiempoRest = 60; }
+  else if (nivel === 'medio')  { maxNum = 20;  tiempoRest = 60; }
+  else if (nivel === 'dificil'){ maxNum = 50;  tiempoRest = 60; }
+  else                         { maxNum = 100; tiempoRest = 30; }
 
-  secreto = Math.floor(Math.random() * maxNum) + 1;
-  intCount = 0;
+  secreto   = Math.floor(Math.random() * maxNum) + 1;
+  intCount  = 0;
   adivinado = false;
 
   document.getElementById('rango').textContent = `Entre 1 y ${maxNum}`;
-  ['mensaje','temporizador'].forEach(id => document.getElementById(id).textContent = '');
+  ['mensaje','temporizador'].forEach(id =>
+    document.getElementById(id).textContent = ''
+  );
   document.getElementById('intentos').textContent = 'Intentos: 0';
 
   const inp = document.getElementById('numeroIngresado');
-  inp.value = '';
+  inp.value    = '';
   inp.disabled = false;
   document.getElementById('btnAdivinar').disabled = false;
   inp.focus();
 
   iniciarTemporizador(nivel);
-  cargarRanking(); // refresca ranking
 }
 
-// Verifica la adivinanza
 function verificar() {
   if (adivinado) return;
   const val = +document.getElementById('numeroIngresado').value;
@@ -53,7 +51,11 @@ function verificar() {
     const timeSpent = tot - tiempoRest;
     document.getElementById('mensaje').textContent =
       `🎉 ¡${nom}, acertaste en ${intCount} intentos y ${timeSpent}s!`;
-    enviarRanking(nom, document.getElementById('dificultad').value, intCount, timeSpent);
+    enviarRanking(nom,
+      document.getElementById('dificultad').value,
+      intCount,
+      timeSpent
+    );
     if (intCount === 1) mostrarPantallaSecreta();
   } else {
     document.getElementById('mensaje').textContent =
@@ -61,7 +63,6 @@ function verificar() {
   }
 }
 
-// Temporizador según nivel
 function iniciarTemporizador(nivel) {
   if (nivel === 'facil') return;
   const barra = document.getElementById('barraTiempo');
@@ -69,8 +70,8 @@ function iniciarTemporizador(nivel) {
   timer = setInterval(() => {
     tiempoRest--;
     document.getElementById('temporizador').textContent = `⏳ ${tiempoRest}s`;
-    const tot = nivel === 'extremo' ? 30 : 60;
-    barra.style.width = `${(tiempoRest / tot) * 100}%`;
+    const tot = (nivel === 'extremo' ? 30 : 60);
+    barra.style.width = `${(tiempoRest/tot)*100}%`;
     if (tiempoRest <= 0) {
       clearInterval(timer);
       document.getElementById('mensaje').textContent =
@@ -94,12 +95,10 @@ function cambiarJugador() {
     document.getElementById(id).disabled = true
   );
   ['mensaje','temporizador','rango','intentos'].forEach(id =>
-    document.getElementById(id).textContent =
-      id === 'intentos' ? 'Intentos: 0' : ''
+    document.getElementById(id).textContent = id === 'intentos' ? 'Intentos: 0' : ''
   );
 }
 
-// Enviar ranking con tiempo
 function enviarRanking(nombre, nivel, intentos, timeSpent) {
   db.ref('rankings').push().set(
     { nombre, nivel, intentos, timeSpent, ts: Date.now() },
@@ -107,9 +106,4 @@ function enviarRanking(nombre, nivel, intentos, timeSpent) {
   );
 }
 
-export {
-  iniciarJuego,
-  verificar,
-  reiniciar,
-  cambiarJugador
-};
+export { iniciarJuego, verificar, reiniciar, cambiarJugador };
