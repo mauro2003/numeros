@@ -86,12 +86,6 @@
       border-radius: 5px;
     }
     ul { padding-left: 20px; text-align: left; }
-
-    @media (max-width: 600px) {
-      body { padding: 10px; }
-      h1 { font-size: 1.4em; }
-      input, select, button { font-size: 1em; }
-    }
   </style>
 </head>
 <body>
@@ -140,7 +134,7 @@
   <audio id="musicaFondo" loop>
     <source src="musica.mp3" type="audio/mpeg">
   </audio>
-  <button onclick="toggleMusica()" style="
+  <button id="btnMusica" onclick="toggleMusica()" style="
     position: fixed;
     top: 20px;
     right: 20px;
@@ -148,20 +142,19 @@
     width: 40px;
     height: 40px;
     font-size: 20px;
-    background-color: #28a745;
+    background-color: #dc3545;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
   ">
-    🔊
+    🔇
   </button>
 
   <audio id="sonidoVictoria">
     <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mp3">
   </audio>
-
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     let secreto = 0;
@@ -264,7 +257,12 @@
 
         if (tiempoRestante <= 0) {
           clearInterval(intervaloTiempo);
-          document.getElementById("mensaje").textContent = "⛔ ¡Se acabó el tiempo!";
+          document.getElementById("mensaje").innerHTML = `
+            <div style="font-size: 2em; font-weight: bold; color: #ff0033;">
+              El número era: ${secreto}
+            </div>
+            ⛔ ¡Se acabó el tiempo!
+          `;
           document.getElementById("btnAdivinar").disabled = true;
           document.getElementById("numeroIngresado").disabled = true;
         }
@@ -339,18 +337,17 @@
 
     function toggleMusica() {
       const musica = document.getElementById("musicaFondo");
-      const btn = event.target;
+      const btn = document.getElementById("btnMusica");
       if (musica.paused) {
         musica.play();
-        btn.textContent = "🔇";
-        btn.style.backgroundColor = "#dc3545";
-      } else {
-        musica.pause();
         btn.textContent = "🔊";
         btn.style.backgroundColor = "#28a745";
+      } else {
+        musica.pause();
+        btn.textContent = "🔇";
+        btn.style.backgroundColor = "#dc3545";
       }
     }
   </script>
 </body>
 </html>
-
