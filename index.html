@@ -18,99 +18,45 @@
       min-height: 100vh;
       padding: 20px;
     }
-    @keyframes moverFondo {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    .container {
-      display: flex;
-      gap: 30px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+    @keyframes moverFondo { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+    .container { display:flex; gap:30px; flex-wrap:wrap; justify-content:center; }
     .card, .panel {
-      background: rgba(255, 255, 255, 0.9);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      animation: fadeIn 0.6s ease-in;
-      width: 100%;
-      max-width: 400px;
+      background: rgba(255,255,255,0.9);
+      padding:30px; border-radius:15px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.2);
+      animation:fadeIn 0.6s ease-in;
+      width:100%; max-width:400px;
     }
-    .card { text-align: center; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover { background-color: #0056b3; }
-    #btnMensajeSecreto { animation: latido 1s infinite; }
-    @keyframes latido {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-    }
-    #pantallaMensaje {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: black;
-      color: white;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-size: 3em;
-      z-index: 9998;
-      text-align: center;
-    }
-    #barraTiempo {
-      height: 10px;
-      background-color: #28a745;
-      transition: width 1s;
-      width: 100%;
-      margin-top: 10px;
-      border-radius: 5px;
-    }
-    ul { padding-left: 20px; text-align: left; }
+    @keyframes fadeIn { from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);} }
+    input, select, button { width:100%; padding:10px; margin:10px 0; border-radius:8px; border:1px solid #ccc; font-size:1em; }
+    button { background-color:#007bff; color:white; font-weight:bold; cursor:pointer; }
+    button:hover { background-color:#0056b3; }
+    #barraTiempo { height:10px; background-color:#28a745; transition:width 1s; width:100%; margin-top:10px; border-radius:5px; }
+    ul { padding-left:20px; text-align:left; }
+    #pantallaMensaje { position:fixed; top:0; left:0; width:100%; height:100%; background:black; color:white; display:none; align-items:center; justify-content:center; font-size:3em; z-index:9998; text-align:center; }
+    #btnMensajeSecreto { animation:latido 1s infinite; }
+    @keyframes latido { 0%,100%{transform:scale(1);}50%{transform:scale(1.2);} }
   </style>
 </head>
 <body>
-  <div style="position: absolute; top: 10px; left: 20px; font-weight: bold; font-size: 1.2em; color: white; text-shadow: 1px 1px 2px black;">
-    Mauricio Johansen
-  </div>
-
+  <div style="position:absolute; top:10px; left:20px; font-weight:bold; font-size:1.2em; color:white; text-shadow:1px 1px 2px black;">Mauricio Johansen</div>
   <div class="container">
     <div class="card">
       <h1>🎯 Adivina el Número</h1>
       <input type="text" id="nombreJugador" placeholder="Tu nombre" />
       <label for="dificultad">Seleccioná un nivel:</label>
-      <select id="dificultad" onchange="iniciarJuego()">
+      <select id="dificultad">
         <option value="">-- Elegir --</option>
         <option value="facil">Fácil (1-10)</option>
         <option value="medio">Medio (1-20)</option>
         <option value="dificil">Difícil (1-50)</option>
-        <option value="extremo">Extremo (1-100, 30 segundos)</option>
+        <option value="extremo">Extremo (1-100, 30s)</option>
       </select>
-
       <p id="rango"></p>
       <input type="number" id="numeroIngresado" disabled placeholder="Ingresa tu número">
-      <button id="btnAdivinar" disabled onclick="verificar()">Adivinar</button>
-      <button onclick="reiniciar()">🔄 Reiniciar</button>
-      <button onclick="cambiarJugador()">Cambiar jugador</button>
-
+      <button id="btnAdivinar" disabled>Adivinar</button>
+      <button id="btnReiniciar">🔄 Reiniciar</button>
+      <button id="btnCambiar">Cambiar jugador</button>
       <p id="mensaje"></p>
       <p id="intentos">Intentos: 0</p>
       <p id="pista"></p>
@@ -118,50 +64,126 @@
       <div id="barraTiempo"></div>
       <p id="medalla"></p>
       <p id="mejorPuntaje"></p>
-      <button id="btnMensajeSecreto" style="display: none;" onclick="mostrarMensaje()">Mostrar mensaje secreto</button>
+      <button id="btnMensajeSecreto" style="display:none;">Mostrar mensaje secreto</button>
     </div>
-
     <div class="panel">
       <h2>🏆 Ranking Online</h2>
       <ul id="rankingOnline"></ul>
     </div>
   </div>
-
   <div id="pantallaMensaje">Sol sucia, bañate 😆</div>
-
-  <audio id="musicaFondo" loop>
-    <source src="musica.mp3" type="audio/mpeg">
-  </audio>
-  <button id="btnMusica" onclick="toggleMusica()" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  ">
-    🔇
-  </button>
-
+  <audio id="musicaFondo" loop><source src="musica.mp3" type="audio/mpeg"></audio>
+  <button id="btnMusica" style="position:fixed; top:20px; right:20px; z-index:9999; width:40px; height:40px; font-size:20px; background-color:#dc3545; color:white; border:none; border-radius:10px; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.3);">🔇</button>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script type="module">
-    // Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
     import { getAnalytics }    from "https://www.gstatic.com/firebasejs/11.7.1/firebase-analytics.js";
     import { getDatabase, ref, push, query, orderByChild, limitToFirst, get } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
-    // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
       authDomain: "adivina-numero-ranking.firebaseapp.com",
       databaseURL: "https://adivina-numero-ranking-default-rtdb.firebaseio.com",
       projectId: "adivina-numero-ranking",
-      storageBucket: "adivina-negro-ranking.firebasestorage.app",
-      messagingSenderId: "
+      storageBucket: "adivina-numero-ranking.appspot.com",
+      messagingSenderId: "574261292288",
+      appId: "1:574261292288:web:6d6673c104e0e2aa0857e5",
+      measurementId: "G-0Z5FS4WGTJ"
+    };
+    const app       = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db        = getDatabase(app);
+
+    // Ranking
+    function enviarRanking(nombre, nivel, intentos) {
+      push(ref(db, "rankings"), { nombre, nivel, intentos, timestamp: Date.now() })
+        .catch(e => console.error("Error al guardar ranking:", e));
+    }
+    function cargarRankingOnline() {
+      get(query(ref(db, "rankings"), orderByChild("intentos"), limitToFirst(10)))
+        .then(snap => {
+          const lista = document.getElementById("rankingOnline"); lista.innerHTML = "";
+          snap.forEach(item => {
+            const { nombre, nivel, intentos } = item.val();
+            const li = document.createElement("li");
+            li.textContent = `${nombre} — ${nivel} — ${intentos} intento(s)`;
+            lista.appendChild(li);
+          });
+        });
+    }
+    window.enviarRanking = enviarRanking;
+    window.cargarRankingOnline = cargarRankingOnline;
+    window.addEventListener("load", cargarRankingOnline);
+
+    // Juego
+    let secreto, maxNumero, contadorIntentos, adivinado, tiempoRestante, intervalo;
+    function iniciarJuego() {
+      const nombre = document.getElementById("nombreJugador").value.trim();
+      if (!nombre) return alert("Ingresá tu nombre");
+      const nivel = document.getElementById("dificultad").value;
+      if (!nivel) return;
+      clearInterval(intervalo);
+      switch(nivel) {
+        case "facil": maxNumero=10; tiempoRestante=60; break;
+        case "medio": maxNumero=20; tiempoRestante=60; break;
+        case "dificil": maxNumero=50; tiempoRestante=60; break;
+        case "extremo": maxNumero=100; tiempoRestante=30; break;
+      }
+      secreto = Math.floor(Math.random()*maxNumero)+1;
+      contadorIntentos=0; adivinado=false;
+      document.getElementById("rango").textContent = `Entre 1 y ${maxNumero}`;
+      document.getElementById("numeroIngresado").disabled = false;
+      document.getElementById("btnAdivinar").disabled = false;
+      document.getElementById("numeroIngresado").focus();
+      iniciarTemporizador(nivel);
+    }
+    function verificar() {
+      if (adivinado) return;
+      const val = parseInt(document.getElementById("numeroIngresado").value);
+      if (isNaN(val)|| val<1|| val>maxNumero) return;
+      contadorIntentos++;
+      document.getElementById("intentos").textContent = `Intentos: ${contadorIntentos}`;
+      if (val===secreto) {
+        adivinado=true; clearInterval(intervalo);
+        const nom = document.getElementById("nombreJugador").value;
+        document.getElementById("mensaje").textContent = `🎉 ${nom}, acertaste en ${contadorIntentos}`;
+        enviarRanking(nom, document.getElementById("dificultad").value, contadorIntentos);
+        cargarRankingOnline();
+      } else {
+        document.getElementById("mensaje").textContent = val<secreto?"📉 Muy bajo":"📈 Muy alto";
+      }
+    }
+    function iniciarTemporizador(nivel) {
+      if (nivel!="facil") {
+        clearInterval(intervalo);
+        document.getElementById("barraTiempo").style.width="100%";
+        intervalo = setInterval(() => {
+          tiempoRestante--;
+          document.getElementById("temporizador").textContent = `⏳ ${tiempoRestante}s`;
+          const total = nivel==="extremo"?30:60;
+          document.getElementById("barraTiempo").style.width = `${(tiempoRestante/total)*100}%`;
+          if (tiempoRestante<=0) { clearInterval(intervalo); document.getElementById("btnAdivinar").disabled=true; }
+        },1000);
+      }
+    }
+    function reiniciar() { clearInterval(intervalo); iniciarJuego(); }
+    function cambiarJugador() {
+      clearInterval(intervalo);
+      ["nombreJugador","dificultad","numeroIngresado"].forEach(id=>{document.getElementById(id).value = '';});
+      ["numeroIngresado","btnAdivinar"].forEach(id=>document.getElementById(id).disabled=true);
+    }
+    function mostrarMensaje() { document.getElementById("pantallaMensaje").style.display="flex"; }
+    function toggleMusica() {
+      const m = document.getElementById("musicaFondo"), b=document.getElementById("btnMusica");
+      if(m.paused){m.play(); b.textContent="🔊";} else {m.pause(); b.textContent="🔇";}
+    }
+    // Exponer en global
+    window.iniciarJuego = iniciarJuego;
+    window.verificar = verificar;
+    window.reiniciar = reiniciar;
+    window.cambiarJugador = cambiarJugador;
+    window.mostrarMensaje = mostrarMensaje;
+    window.toggleMusica = toggleMusica;
+  </script>
+</body>
+</html>
