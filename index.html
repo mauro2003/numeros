@@ -58,6 +58,7 @@
       cursor: pointer;
     }
     button:hover { background-color: #0056b3; }
+
     #btnMensajeSecreto { animation: latido 1s infinite; }
     @keyframes latido {
       0%, 100% { transform: scale(1); }
@@ -75,6 +76,14 @@
       font-size: 3em;
       z-index: 9998;
       text-align: center;
+    }
+    #barraTiempo {
+      height: 10px;
+      background-color: #28a745;
+      transition: width 1s;
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 5px;
     }
     ul { padding-left: 20px; text-align: left; }
 
@@ -113,7 +122,7 @@
       <p id="intentos">Intentos: 0</p>
       <p id="pista"></p>
       <p id="temporizador"></p>
-      <div id="barraTiempo" style="height: 10px; background-color: #28a745; transition: width 1s; width: 100%; margin-top: 10px; border-radius: 5px;"></div>
+      <div id="barraTiempo"></div>
       <p id="medalla"></p>
       <p id="mejorPuntaje"></p>
       <button id="btnMensajeSecreto" style="display: none;" onclick="mostrarMensaje()">Mostrar mensaje secreto</button>
@@ -126,11 +135,34 @@
   </div>
 
   <div id="pantallaMensaje">Sol sucia, bañate 😆</div>
+
+  <!-- 🎵 AUDIO DE FONDO -->
+  <audio id="musicaFondo" loop>
+    <source src="musica.mp3" type="audio/mpeg">
+  </audio>
+  <button onclick="toggleMusica()" style="
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  ">
+    🔊
+  </button>
+
   <audio id="sonidoVictoria">
     <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mp3">
   </audio>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     let secreto = 0;
     let maxNumero = 10;
@@ -223,7 +255,8 @@
       intervaloTiempo = setInterval(() => {
         tiempoRestante--;
         temporizador.textContent = `⏳ Tiempo restante: ${tiempoRestante}s`;
-        document.getElementById("barraTiempo").style.width = `${(tiempoRestante / (nivelActual === "extremo" ? 30 : 60)) * 100}%`;
+        const max = nivelActual === "extremo" ? 30 : 60;
+        document.getElementById("barraTiempo").style.width = `${(tiempoRestante / max) * 100}%`;
 
         if (tiempoRestante === 15 && !adivinado && nivelActual === "extremo") {
           document.getElementById("pista").textContent = "💡 Pista: el número es " + (secreto % 2 === 0 ? "par" : "impar") + ".";
@@ -303,46 +336,16 @@
     function mostrarMensaje() {
       document.getElementById("pantallaMensaje").style.display = "flex";
     }
-  </script>
-
-  <!-- 🎵 MÚSICA DE FONDO -->
-  <audio id="musicaFondo" loop>
-    <source src="musica.mp3" type="audio/mpeg">
-    Tu navegador no soporta audio HTML5.
-  </audio>
-
-  <button onclick="toggleMusica()" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  ">
-    🔊
-  </button>
-
-  <script>
-    const musica = document.getElementById("musicaFondo");
-    let musicaActiva = false;
 
     function toggleMusica() {
+      const musica = document.getElementById("musicaFondo");
       const btn = event.target;
-      if (!musicaActiva) {
+      if (musica.paused) {
         musica.play();
-        musicaActiva = true;
         btn.textContent = "🔇";
         btn.style.backgroundColor = "#dc3545";
       } else {
         musica.pause();
-        musicaActiva = false;
         btn.textContent = "🔊";
         btn.style.backgroundColor = "#28a745";
       }
