@@ -123,11 +123,6 @@
     </div>
 
     <div class="panel">
-      <h2>🗂 Historial</h2>
-      <ul id="listaHistorial"></ul>
-    </div>
-
-    <div class="panel">
       <h2>🏆 Ranking Online</h2>
       <ul id="rankingOnline"></ul>
     </div>
@@ -162,7 +157,6 @@
 
   <!-- Firebase + Juego Code -->
   <script type="module">
-    // Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
     import { getAnalytics }    from "https://www.gstatic.com/firebasejs/11.7.1/firebase-analytics.js";
     import {
@@ -175,7 +169,6 @@
       get
     } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
-    // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
       authDomain: "adivina-numero-ranking.firebaseapp.com",
