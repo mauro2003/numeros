@@ -14,7 +14,7 @@
   <!-- CSS externo -->
   <link rel="stylesheet" href="css/styles.css" />
 
-  <!-- Firebase compat SDKs -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
@@ -26,22 +26,29 @@
     Mauricio Johansen
   </div>
 
-  <!-- Audio de fondo con preload -->
+  <!-- Audio de fondo y controles de playlist -->
   <audio
     id="musicaFondo"
-    src="musica.mp3"
+    src="musica1.mp3"
     type="audio/mpeg"
     loop
     preload="auto"
   ></audio>
-  <button class="audio-btn" id="btnMusica">🔇</button>
+  <div
+    id="audioControls"
+    style="position:absolute; top:50px; right:20px; display:flex; gap:8px; z-index:10000;"
+  >
+    <button class="audio-btn" id="btnPrev" title="Anterior">⏮️</button>
+    <button class="audio-btn" id="btnPlay" title="Play/Pausa">▶️</button>
+    <button class="audio-btn" id="btnNext" title="Siguiente">⏭️</button>
+  </div>
 
   <!-- Botón modo oscuro -->
   <button
     id="btnDarkMode"
     class="audio-btn"
-    style="bottom:20px; left:20px;"
-    title="Activar modo oscuro"
+    style="position:absolute; bottom:20px; left:20px; z-index:10000;"
+    title="Alternar modo oscuro"
   >
     🌙
   </button>
