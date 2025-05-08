@@ -1,5 +1,4 @@
-/// js/main.js
-
+// js/main.js
 import { iniciarJuego, verificar, reiniciar, cambiarJugador } from './juego.js';
 import { cargarRanking } from './ranking.js';
 import { inicializarModoOscuro, inicializarAudio } from './ui.js';
@@ -15,8 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnCambiar')
           .addEventListener('click', cambiarJugador);
 
-  // Carga inicial del ranking, modo oscuro y audio
-  cargarRanking();
-  inicializarModoOscuro();
-  inicializarAudio();
+  // Carga inicial de datos y UI
+  cargarRanking();        // Ranking online
+  inicializarModoOscuro();// Tema oscuro
+  inicializarAudio();     // Toggle de música
 });
