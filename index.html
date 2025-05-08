@@ -58,7 +58,6 @@
       cursor: pointer;
     }
     button:hover { background-color: #0056b3; }
-
     #btnMensajeSecreto { animation: latido 1s infinite; }
     @keyframes latido {
       0%, 100% { transform: scale(1); }
@@ -92,7 +91,6 @@
   <div style="position: absolute; top: 10px; left: 20px; font-weight: bold; font-size: 1.2em; color: white; text-shadow: 1px 1px 2px black;">
     Mauricio Johansen
   </div>
-
   <div class="container">
     <div class="card">
       <h1>🎯 Adivina el Número</h1>
@@ -105,13 +103,11 @@
         <option value="dificil">Difícil (1-50)</option>
         <option value="extremo">Extremo (1-100, 30 segundos)</option>
       </select>
-
       <p id="rango"></p>
       <input type="number" id="numeroIngresado" disabled placeholder="Ingresa tu número">
       <button onclick="verificar()" id="btnAdivinar" disabled>Adivinar</button>
       <button onclick="reiniciar()">🔄 Reiniciar</button>
       <button onclick="cambiarJugador()">Cambiar jugador</button>
-
       <p id="mensaje"></p>
       <p id="intentos">Intentos: 0</p>
       <p id="pista"></p>
@@ -121,53 +117,21 @@
       <p id="mejorPuntaje"></p>
       <button id="btnMensajeSecreto" style="display: none;" onclick="mostrarMensaje()">Mostrar mensaje secreto</button>
     </div>
-
     <div class="panel">
       <h2>🏆 Ranking Online</h2>
       <ul id="rankingOnline"></ul>
     </div>
   </div>
-
   <div id="pantallaMensaje">Sol sucia, bañate 😆</div>
-
-  <!-- 🎵 AUDIO DE FONDO -->
   <audio id="musicaFondo" loop>
     <source src="musica.mp3" type="audio/mpeg">
   </audio>
-  <button id="btnMusica" onclick="toggleMusica()" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  ">
-    🔇
-  </button>
-
-  <!-- Confetti -->
+  <button id="btnMusica" onclick="toggleMusica()" style="position: fixed; top: 20px; right: 20px; z-index: 9999; width: 40px; height: 40px; font-size: 20px; background-color: #dc3545; color: white; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">🔇</button>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-  <!-- Firebase + Juego Code -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
     import { getAnalytics }    from "https://www.gstatic.com/firebasejs/11.7.1/firebase-analytics.js";
-    import {
-      getDatabase,
-      ref,
-      push,
-      query,
-      orderByChild,
-      limitToFirst,
-      get
-    } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
+    import { getDatabase, ref, push, query, orderByChild, limitToFirst, get } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
@@ -176,4 +140,113 @@
       projectId: "adivina-numero-ranking",
       storageBucket: "adivina-numero-ranking.firebasestorage.app",
       messagingSenderId: "574261292288",
-      appId: "1:574261
+      appId: "1:574261292288:web:6d6673c104e0e2aa0857e5",
+      measurementId: "G-0Z5FS4WGTJ"
+    };
+    const app       = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db        = getDatabase(app);
+
+    window.enviarRanking = (nombre, nivel, intentos) => {
+      push(ref(db, "rankings"), { nombre, nivel, intentos, timestamp: Date.now() })
+        .catch(e => console.error("Error al guardar ranking:", e));
+    };
+
+    window.cargarRankingOnline = () => {
+      const q = query(ref(db, "rankings"), orderByChild("intentos"), limitToFirst(10));
+      get(q)
+        .then(snap => {
+          const lista = document.getElementById("rankingOnline"); lista.innerHTML = "";
+          snap.forEach(child => {
+            const { nombre, nivel, intentos } = child.val();
+            const li = document.createElement("li");
+            li.textContent = `${nombre} — ${nivel} — ${intentos} intento(s)`;
+            lista.appendChild(li);
+          });
+        })
+        .catch(e => console.error("Error al cargar ranking:", e));
+    };
+    window.addEventListener("load", cargarRankingOnline);
+
+    let secreto=0, maxNumero=10, contadorIntentos=0, adivinado=false;
+    let tiempoRestante=60, intervaloTiempo, nivelActual="";
+
+    function iniciarJuego() {
+      const nombre = document.getElementById("nombreJugador").value.trim();
+      if (!nombre) { alert("Ingresá tu nombre para jugar."); document.getElementById("dificultad").value=""; return; }
+      nivelActual = document.getElementById("dificultad").value;
+      if (!nivelActual) return;
+      clearInterval(intervaloTiempo);
+      switch(nivelActual){case"facil":maxNumero=10;break;case"medio":maxNumero=20;tiempoRestante=60;iniciarTemporizador();break;case"dificil":maxNumero=50;tiempoRestante=60;iniciarTemporizador();break;case"extremo":maxNumero=100;tiempoRestante=30;iniciarTemporizador();break;}
+      secreto=Math.floor(Math.random()*maxNumero)+1;
+      contadorIntentos=0; adivinado=false;
+      document.getElementById("rango").textContent=`El número está entre 1 y ${maxNumero}.`;
+      ["mensaje","pista","temporizador","medalla","mejorPuntaje"].forEach(id=>document.getElementById(id).textContent="");
+      document.getElementById("intentos").textContent="Intentos: 0";
+      document.getElementById("numeroIngresado").value="";
+      document.getElementById("numeroIngresado").disabled=false;
+      document.getElementById("btnAdivinar").disabled=false;
+    }
+
+    function verificar() {
+      if(adivinado) return;
+      const intento=parseInt(document.getElementById("numeroIngresado").value);
+      if(isNaN(intento)|| intento<1|| intento>maxNumero){
+        document.getElementById("mensaje").textContent=`⚠️ Ingresa un número entre 1 y ${maxNumero}.`;
+        return;
+      }
+      contadorIntentos++;
+      document.getElementById("intentos").textContent="Intentos: "+contadorIntentos;
+      if(intento===secreto){
+        const nombre=document.getElementById("nombreJugador").value.trim();
+        document.getElementById("mensaje").textContent=`🎉 ¡Bien hecho, ${nombre}! Adivinaste en ${contadorIntentos} intentos.`;
+        adivinado=true; clearInterval(intervaloTiempo);
+        document.getElementById("btnAdivinar").disabled=true;
+        document.getElementById("numeroIngresado").disabled=true;
+        window.enviarRanking(nombre,nivelActual,contadorIntentos);
+        window.cargarRankingOnline();
+        if(contadorIntentos<=3)document.getElementById("medalla").textContent="🥇 Medalla de Oro";
+        else if(contadorIntentos<=5)document.getElementById("medalla").textContent="🥈 Medalla de Plata";
+        else document.getElementById("medalla").textContent="🥉 Medalla de Bronce";
+        document.getElementById("btnMensajeSecreto").style.display="inline-block";
+      } else {
+        document.getElementById("mensaje").textContent = intento<secreto?"📉 Muy bajo":"📈 Muy alto";
+      }
+    }
+
+    function iniciarTemporizador() {
+      const temporizador=document.getElementById("temporizador");
+      intervaloTiempo=setInterval(()=>{
+        tiempoRestante--;
+        temporizador.textContent=`⏳ Tiempo restante: ${tiempoRestante}s`;
+        document.getElementById("barraTiempo").style.width=`${(tiempoRestante/(nivelActual==="extremo"?30:60))*100}%`;
+        if(tiempoRestante<=0){clearInterval(intervaloTiempo);
+          document.getElementById("mensaje").innerHTML=`<div style="font-size:2em;color:#f03;font-weight:bold;">El número era: ${secreto}</div>⛔ ¡Tiempo!`;
+          document.getElementById("numeroIngresado").disabled=true;
+          document.getElementById("btnAdivinar").disabled=true;
+        }
+      },1000);
+    }
+
+    function guardarMejorPuntaje(nombre){
+      const key=`mejor_${nombre}`,d=JSON.parse(localStorage.getItem(key))||{},a=d[nivelActual]||Infinity;
+      if(contadorIntentos<a){d[nivelActual]=contadorIntentos;localStorage.setItem(key,JSON.stringify(d));}
+    }
+    function mostrarMejorPuntaje(){
+      const nombre=document.getElementById("nombreJugador").value.trim(),d=JSON.parse(localStorage.getItem(`mejor_${nombre}`))||{};
+      if(d[nivelActual])document.getElementById("mejorPuntaje").textContent=`🏅 Tu mejor en ${nivelActual}: ${d[nivelActual]}`;
+    }
+
+    function cambiarJugador(){
+      ['nombreJugador','dificultad','numeroIngresado'].forEach(id=>document.getElementById(id).value='');
+      ['numeroIngresado','btnAdivinar'].forEach(id=>document.getElementById(id).disabled=true);
+      ['mensaje','intentos','pista','rango','temporizador','medalla','mejorPuntaje'].forEach(id=>document.getElementById(id).textContent=id==='intentos'?'Intentos: 0':'' );
+      document.getElementById("barraTiempo").style.width="100%";
+    }
+
+    function reiniciar(){clearInterval(intervaloTiempo);iniciarJuego();}
+    function mostrarMensaje(){document.getElementById("pantallaMensaje").style.display="flex";}
+    function toggleMusica(){const m=document.getElementById("musicaFondo"),b=document.getElementById("btnMusica");if(m.paused){m.play();b.textContent="🔊";b.style.backgroundColor="#28a745";}else{m.pause();b.textContent="🔇";b.style.backgroundColor="#dc3545";}}
+  </script>
+</body>
+</html>
