@@ -23,3 +23,21 @@ export function inicializarModoOscuro() {
     document.body.classList.add('dark');
   }
 }
+// Inicializa el toggle de la música de fondo
+export function inicializarAudio() {
+  const audio = document.getElementById('musicaFondo');
+  const btn   = document.getElementById('btnMusica');
+  if (!audio || !btn) return;
+
+  btn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+      btn.textContent = '🔊';
+      btn.style.background = '#28a745';
+    } else {
+      audio.pause();
+      btn.textContent = '🔇';
+      btn.style.background = '#dc3545';
+    }
+  });
+}
