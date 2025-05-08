@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Juego Adivina el Número</title>
+  <title>Juego Adivina el Número con Ranking Online</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; }
@@ -126,6 +126,11 @@
       <h2>🗂 Historial</h2>
       <ul id="listaHistorial"></ul>
     </div>
+
+    <div class="panel">
+      <h2>🏆 Ranking Online</h2>
+      <ul id="rankingOnline"></ul>
+    </div>
   </div>
 
   <div id="pantallaMensaje">Sol sucia, bañate 😆</div>
@@ -152,202 +157,30 @@
     🔇
   </button>
 
-  <audio id="sonidoVictoria">
-    <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mp3">
-  </audio>
+  <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script>
-    let secreto = 0;
-    let maxNumero = 10;
-    let contadorIntentos = 0;
-    let adivinado = false;
-    let tiempoRestante = 60;
-    let intervaloTiempo;
-    let nivelActual = "";
-    let historialIntentos = [];
 
-    function iniciarJuego() {
-      const nombre = document.getElementById("nombreJugador").value.trim();
-      if (!nombre) {
-        alert("Ingresá tu nombre para jugar.");
-        document.getElementById("dificultad").value = "";
-        return;
-      }
+  <!-- Firebase + Juego Code -->
+  <script type="module">
+    // Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+    import { getAnalytics }    from "https://www.gstatic.com/firebasejs/11.7.1/firebase-analytics.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      query,
+      orderByChild,
+      limitToFirst,
+      get
+    } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-database.js";
 
-      nivelActual = document.getElementById("dificultad").value;
-      if (!nivelActual) return;
-
-      switch (nivelActual) {
-        case "facil": maxNumero = 10; break;
-        case "medio": maxNumero = 20; tiempoRestante = 60; iniciarTemporizador(); break;
-        case "dificil": maxNumero = 50; tiempoRestante = 60; iniciarTemporizador(); break;
-        case "extremo": maxNumero = 100; tiempoRestante = 30; iniciarTemporizador(); break;
-      }
-
-      secreto = Math.floor(Math.random() * maxNumero) + 1;
-      contadorIntentos = 0;
-      adivinado = false;
-      historialIntentos = [];
-
-      document.getElementById("rango").textContent = `El número está entre 1 y ${maxNumero}.`;
-      document.getElementById("mensaje").textContent = "";
-      document.getElementById("pista").textContent = "";
-      document.getElementById("intentos").textContent = "Intentos: 0";
-      document.getElementById("numeroIngresado").value = "";
-      document.getElementById("numeroIngresado").disabled = false;
-      document.getElementById("btnAdivinar").disabled = false;
-      document.getElementById("temporizador").textContent = "";
-      document.getElementById("barraTiempo").style.width = "100%";
-      mostrarMejorPuntaje();
-      mostrarHistorial();
-    }
-
-    function verificar() {
-      if (adivinado) return;
-      const intento = parseInt(document.getElementById("numeroIngresado").value);
-      if (isNaN(intento) || intento < 1 || intento > maxNumero) {
-        document.getElementById("mensaje").textContent = `⚠️ Ingresá un número válido entre 1 y ${maxNumero}.`;
-        return;
-      }
-
-      contadorIntentos++;
-      historialIntentos.push(intento);
-      document.getElementById("intentos").textContent = "Intentos: " + contadorIntentos;
-
-      if (intento === secreto) {
-        const nombre = document.getElementById("nombreJugador").value.trim();
-        document.getElementById("mensaje").textContent = `🎉 ¡Bien hecho, ${nombre}! Adivinaste en ${contadorIntentos} intentos.`;
-        adivinado = true;
-        clearInterval(intervaloTiempo);
-        document.getElementById("btnAdivinar").disabled = true;
-        document.getElementById("numeroIngresado").disabled = true;
-        document.getElementById("sonidoVictoria").play();
-        confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-        guardarMejorPuntaje(nombre);
-        guardarHistorial(nombre);
-        mostrarMejorPuntaje();
-        mostrarHistorial();
-        if (contadorIntentos <= 3) document.getElementById("medalla").textContent = "🥇 Medalla de Oro";
-        else if (contadorIntentos <= 5) document.getElementById("medalla").textContent = "🥈 Medalla de Plata";
-        else document.getElementById("medalla").textContent = "🥉 Medalla de Bronce";
-        document.getElementById("btnMensajeSecreto").style.display = "inline-block";
-      } else {
-        const mensaje = (nivelActual !== "facil") ?
-          "❌ Incorrecto." :
-          (intento < secreto ? "📉 Demasiado bajo." : "📈 Demasiado alto.");
-        document.getElementById("mensaje").textContent = mensaje;
-      }
-
-      if (contadorIntentos === 3 && !adivinado && nivelActual === "facil") {
-        document.getElementById("pista").textContent = "💡 Pista: el número es " + (secreto % 2 === 0 ? "par" : "impar") + ".";
-      }
-    }
-
-    function iniciarTemporizador() {
-      const temporizador = document.getElementById("temporizador");
-      intervaloTiempo = setInterval(() => {
-        tiempoRestante--;
-        temporizador.textContent = `⏳ Tiempo restante: ${tiempoRestante}s`;
-        const max = nivelActual === "extremo" ? 30 : 60;
-        document.getElementById("barraTiempo").style.width = `${(tiempoRestante / max) * 100}%`;
-
-        if (tiempoRestante === 15 && !adivinado && nivelActual === "extremo") {
-          document.getElementById("pista").textContent = "💡 Pista: el número es " + (secreto % 2 === 0 ? "par" : "impar") + ".";
-        }
-
-        if (tiempoRestante <= 0) {
-          clearInterval(intervaloTiempo);
-          document.getElementById("mensaje").innerHTML = `
-            <div style="font-size: 2em; font-weight: bold; color: #ff0033;">
-              El número era: ${secreto}
-            </div>
-            ⛔ ¡Se acabó el tiempo!
-          `;
-          document.getElementById("btnAdivinar").disabled = true;
-          document.getElementById("numeroIngresado").disabled = true;
-        }
-      }, 1000);
-    }
-
-    function guardarMejorPuntaje(nombre) {
-      const clave = `mejor_${nombre}`;
-      const datos = JSON.parse(localStorage.getItem(clave)) || {};
-      const actual = datos[nivelActual] || Infinity;
-      if (contadorIntentos < actual) {
-        datos[nivelActual] = contadorIntentos;
-        localStorage.setItem(clave, JSON.stringify(datos));
-      }
-    }
-
-    function mostrarMejorPuntaje() {
-      const nombre = document.getElementById("nombreJugador").value.trim();
-      const datos = JSON.parse(localStorage.getItem(`mejor_${nombre}`)) || {};
-      if (datos[nivelActual]) {
-        document.getElementById("mejorPuntaje").textContent = `🏅 Tu mejor marca en ${nivelActual}: ${datos[nivelActual]} intento(s)`;
-      } else {
-        document.getElementById("mejorPuntaje").textContent = "";
-      }
-    }
-
-    function guardarHistorial(nombre) {
-      const clave = `historial_${nombre}`;
-      const datos = JSON.parse(localStorage.getItem(clave)) || [];
-      datos.push({ nivel: nivelActual, intentos: contadorIntentos });
-      localStorage.setItem(clave, JSON.stringify(datos));
-    }
-
-    function mostrarHistorial() {
-      const nombre = document.getElementById("nombreJugador").value.trim();
-      const clave = `historial_${nombre}`;
-      const datos = JSON.parse(localStorage.getItem(clave)) || [];
-      const lista = document.getElementById("listaHistorial");
-      lista.innerHTML = "";
-      datos.slice().reverse().forEach(partida => {
-        const li = document.createElement("li");
-        li.textContent = `Nivel: ${partida.nivel} - Intentos: ${partida.intentos}`;
-        lista.appendChild(li);
-      });
-    }
-
-    function cambiarJugador() {
-      document.getElementById("nombreJugador").value = "";
-      document.getElementById("dificultad").value = "";
-      document.getElementById("numeroIngresado").value = "";
-      document.getElementById("numeroIngresado").disabled = true;
-      document.getElementById("btnAdivinar").disabled = true;
-      document.getElementById("mensaje").textContent = "";
-      document.getElementById("intentos").textContent = "Intentos: 0";
-      document.getElementById("pista").textContent = "";
-      document.getElementById("rango").textContent = "";
-      document.getElementById("temporizador").textContent = "";
-      document.getElementById("medalla").textContent = "";
-      document.getElementById("mejorPuntaje").textContent = "";
-      document.getElementById("listaHistorial").innerHTML = "";
-      document.getElementById("barraTiempo").style.width = "100%";
-    }
-
-    function reiniciar() {
-      clearInterval(intervaloTiempo);
-      iniciarJuego();
-    }
-
-    function mostrarMensaje() {
-      document.getElementById("pantallaMensaje").style.display = "flex";
-    }
-
-    function toggleMusica() {
-      const musica = document.getElementById("musicaFondo");
-      const btn = document.getElementById("btnMusica");
-      if (musica.paused) {
-        musica.play();
-        btn.textContent = "🔊";
-        btn.style.backgroundColor = "#28a745";
-      } else {
-        musica.pause();
-        btn.textContent = "🔇";
-        btn.style.backgroundColor = "#dc3545";
-      }
-    }
-  </script>
-</body>
-</html>
+    // Configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
+      authDomain: "adivina-numero-ranking.firebaseapp.com",
+      databaseURL: "https://adivina-numero-ranking-default-rtdb.firebaseio.com",
+      projectId: "adivina-numero-ranking",
+      storageBucket: "adivina-numero-ranking.firebasestorage.app",
+      messagingSenderId: "574261292288",
+      appId: "1:574261
