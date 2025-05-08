@@ -28,6 +28,7 @@
     #pantallaMensaje{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:none;
       align-items:center;justify-content:center;font-size:3em;z-index:9999;text-align:center}
   </style>
+
   <!-- Firebase compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -48,11 +49,13 @@
         <option value="dificil">Difícil (1-50)</option>
         <option value="extremo">Extremo (1-100, 30s)</option>
       </select>
+
       <p id="rango"></p>
       <input type="number" id="numeroIngresado" disabled placeholder="Ingresa tu número" />
       <button id="btnAdivinar" disabled>Adivinar</button>
       <button id="btnReiniciar">🔄 Reiniciar</button>
       <button id="btnCambiar">Cambiar jugador</button>
+
       <p id="mensaje"></p>
       <p id="intentos">Intentos: 0</p>
       <p id="temporizador"></p>
@@ -67,43 +70,40 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     // Firebase init
-    const firebaseConfig={
-      apiKey:"AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
-      authDomain:"adivina-numero-ranking.firebaseapp.com",
-      databaseURL:"https://adivina-numero-ranking-default-rtdb.firebaseio.com",
-      projectId:"adivina-numero-ranking",
-      storageBucket:"adivina-numero-ranking.appspot.com",
-      messagingSenderId:"574261292288",
-      appId:"1:574261292288:web:6d6673c104e0e2aa0857e5"
+    const firebaseConfig = {
+      apiKey: "AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
+      authDomain: "adivina-numero-ranking.firebaseapp.com",
+      databaseURL: "https://adivina-numero-ranking-default-rtdb.firebaseio.com",
+      projectId: "adivina-numero-ranking",
+      storageBucket: "adivina-numero-ranking.appspot.com",
+      messagingSenderId: "574261292288",
+      appId: "1:574261292288:web:6d6673c104e0e2aa0857e5"
     };
     firebase.initializeApp(firebaseConfig);
-    const db=firebase.database();
+    const db = firebase.database();
 
-    // Ranking functions using callbacks
-    function cargarRankingOnline() {
-      db.ref('rankings')
-        .orderByChild('intentos')
-        .limitToFirst(10)
-        .once('value', snap => {
-          const ul = document.getElementById('rankingOnline'); ul.innerHTML = '';
-          snap.forEach(child => {
-            const v = child.val();
-            const li = document.createElement('li');
-            li.textContent = `${v.nombre} — ${v.nivel} — ${v.intentos} intento(s)`;
-            ul.appendChild(li);
-          });
-        }, err => console.error(err));
-    }
-    function enviarRanking(nombre, nivel, intentos) {
-      const newRef = db.ref('rankings').push();
-      newRef.set({ nombre, nivel, intentos, ts: Date.now() }, err => {
-        if (err) console.error(err);
-        else cargarRankingOnline();
+    // Real-time ranking listener
+    const rankingsRef = db.ref('rankings').orderByChild('intentos').limitToFirst(10);
+    rankingsRef.on('value', snap => {
+      const ul = document.getElementById('rankingOnline');
+      ul.innerHTML = '';
+      snap.forEach(child => {
+        const { nombre, nivel, intentos } = child.val();
+        const li = document.createElement('li');
+        li.textContent = `${nombre} — ${nivel} — ${intentos} intento(s)`;
+        ul.appendChild(li);
       });
+    });
+
+    // Send new ranking entry
+    function enviarRanking(nombre, nivel, intentos) {
+      db.ref('rankings').push({ nombre, nivel, intentos, ts: Date.now() })
+        .catch(console.error);
     }
 
     // Game logic
     let secreto, maxNum, intCount, adivinado, tiempoRest, timer;
+
     function iniciarJuego() {
       const nom = document.getElementById('nombreJugador').value.trim();
       if (!nom) return alert('Ingresá tu nombre');
@@ -111,13 +111,14 @@
       if (!nivel) return;
       clearInterval(timer);
       switch (nivel) {
-        case 'facil':  maxNum=10; tiempoRest=60; break;
-        case 'medio':  maxNum=20; tiempoRest=60; break;
-        case 'dificil':maxNum=50; tiempoRest=60; break;
+        case 'facil':  maxNum=10;  tiempoRest=60; break;
+        case 'medio':  maxNum=20;  tiempoRest=60; break;
+        case 'dificil':maxNum=50;  tiempoRest=60; break;
         case 'extremo':maxNum=100; tiempoRest=30; break;
       }
       secreto = Math.floor(Math.random()*maxNum)+1;
-      intCount = 0; adivinado = false;
+      intCount = 0;
+      adivinado = false;
       document.getElementById('rango').textContent = `Entre 1 y ${maxNum}`;
       ['mensaje','temporizador'].forEach(id=>document.getElementById(id).textContent='');
       document.getElementById('intentos').textContent = 'Intentos: 0';
@@ -128,50 +129,54 @@
       iniciarTemporizador(nivel);
       confetti({ particleCount:0 });
     }
+
     function verificar() {
       if (adivinado) return;
       const val = +document.getElementById('numeroIngresado').value;
       if (!val || val<1 || val>maxNum) return;
       intCount++;
       document.getElementById('intentos').textContent = `Intentos: ${intCount}`;
-      if (val===secreto) {
-        adivinado = true; clearInterval(timer);
+      if (val === secreto) {
+        adivinado = true;
+        clearInterval(timer);
         const nom = document.getElementById('nombreJugador').value;
         document.getElementById('mensaje').textContent = `🎉 ¡${nom}, acertaste en ${intCount}!`;
         confetti({ particleCount:150, spread:100, origin:{ y:0.6 }});
         enviarRanking(nom, document.getElementById('dificultad').value, intCount);
       } else {
-        document.getElementById('mensaje').textContent = val<secreto?'📉 Muy bajo':'📈 Muy alto';
+        document.getElementById('mensaje').textContent = val < secreto ? '📉 Muy bajo' : '📈 Muy alto';
       }
     }
+
     function iniciarTemporizador(nivel) {
-      if (nivel==='facil') return;
+      if (nivel === 'facil') return;
       document.getElementById('barraTiempo').style.width = '100%';
-      timer = setInterval(()=>{
+      timer = setInterval(() => {
         tiempoRest--;
         document.getElementById('temporizador').textContent = `⏳ ${tiempoRest}s`;
-        const total = nivel==='extremo'?30:60;
+        const total = nivel === 'extremo' ? 30 : 60;
         document.getElementById('barraTiempo').style.width = `${(tiempoRest/total)*100}%`;
-        if (tiempoRest<=0) {
+        if (tiempoRest <= 0) {
           clearInterval(timer);
           document.getElementById('mensaje').textContent = `⛔ Se acabó el tiempo, era ${secreto}`;
           document.getElementById('btnAdivinar').disabled = true;
         }
-      },1000);
+      }, 1000);
     }
+
     function reiniciar() { clearInterval(timer); iniciarJuego(); }
     function cambiarJugador() {
       clearInterval(timer);
-      ['nombreJugador','dificultad','numeroIngresado'].forEach(id=>document.getElementById(id).value='');
-      ['numeroIngresado','btnAdivinar'].forEach(id=>document.getElementById(id).disabled=true);
-      ['mensaje','temporizador','rango','intentos'].forEach(id => document.getElementById(id).textContent = id==='intentos'?'Intentos: 0':'');
+      ['nombreJugador','dificultad','numeroIngresado'].forEach(id => document.getElementById(id).value = '');
+      ['numeroIngresado','btnAdivinar'].forEach(id => document.getElementById(id).disabled = true);
+      ['mensaje','temporizador','rango','intentos'].forEach(id => document.getElementById(id).textContent = id === 'intentos' ? 'Intentos: 0' : '');
     }
-    document.addEventListener('DOMContentLoaded',()=>{
+
+    document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('dificultad').addEventListener('change', iniciarJuego);
       document.getElementById('btnAdivinar').addEventListener('click', verificar);
       document.getElementById('btnReiniciar').addEventListener('click', reiniciar);
       document.getElementById('btnCambiar').addEventListener('click', cambiarJugador);
-      cargarRankingOnline();
     });
   </script>
 </body>
