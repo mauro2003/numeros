@@ -27,32 +27,14 @@
     Mauricio Johansen
   </div>
 
-  <!-- 1) Elemento de audio -->
-  <audio
-    id="musicaFondo"
-    src="musica1.mp3"
-    type="audio/mpeg"
-    loop
-    preload="auto"
-  ></audio>
-
-  <!-- 2) Botón Silenciar / Activar sonido -->
+  <!-- Audio de fondo -->
+  <audio id="musicaFondo" src="musica.mp3" type="audio/mpeg" loop preload="auto"></audio>
   <button
-    id="btnMute"
+    id="btnMusica"
     class="audio-btn"
     style="position:absolute; top:50px; left:20px; z-index:10000;"
     title="Silenciar / Activar sonido"
   >🔇</button>
-
-  <!-- 3) Controles de playlist: ⏮️ ▶️ ⏭️ -->
-  <div
-    id="audioControls"
-    style="position:absolute; top:90px; left:20px; display:flex; gap:8px; z-index:10000;"
-  >
-    <button class="audio-btn" id="btnPrev" title="Pista anterior">⏮️</button>
-    <button class="audio-btn" id="btnPlay" title="Play / Pausa">▶️</button>
-    <button class="audio-btn" id="btnNext" title="Pista siguiente">⏭️</button>
-  </div>
 
   <!-- Botón modo oscuro -->
   <button
@@ -111,3 +93,4 @@
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
+
