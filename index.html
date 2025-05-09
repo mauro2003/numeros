@@ -19,6 +19,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
+  <!-- Nombre fijo -->
   <div
     style="position:absolute; top:10px; left:20px; color:#fff; text-shadow:1px 1px 2px #000;
            font-weight:bold; font-size:1.2em; z-index:10000;"
@@ -26,7 +27,7 @@
     Mauricio Johansen
   </div>
 
-  <!-- Audio de fondo y controles de playlist -->
+  <!-- 1) Elemento de audio -->
   <audio
     id="musicaFondo"
     src="musica1.mp3"
@@ -34,13 +35,23 @@
     loop
     preload="auto"
   ></audio>
+
+  <!-- 2) Botón Silenciar / Activar sonido -->
+  <button
+    id="btnMute"
+    class="audio-btn"
+    style="position:absolute; top:50px; left:20px; z-index:10000;"
+    title="Silenciar / Activar sonido"
+  >🔇</button>
+
+  <!-- 3) Controles de playlist: ⏮️ ▶️ ⏭️ -->
   <div
     id="audioControls"
-    style="position:absolute; top:50px; right:20px; display:flex; gap:8px; z-index:10000;"
+    style="position:absolute; top:90px; left:20px; display:flex; gap:8px; z-index:10000;"
   >
-    <button class="audio-btn" id="btnPrev" title="Anterior">⏮️</button>
-    <button class="audio-btn" id="btnPlay" title="Play/Pausa">▶️</button>
-    <button class="audio-btn" id="btnNext" title="Siguiente">⏭️</button>
+    <button class="audio-btn" id="btnPrev" title="Pista anterior">⏮️</button>
+    <button class="audio-btn" id="btnPlay" title="Play / Pausa">▶️</button>
+    <button class="audio-btn" id="btnNext" title="Pista siguiente">⏭️</button>
   </div>
 
   <!-- Botón modo oscuro -->
@@ -49,9 +60,7 @@
     class="audio-btn"
     style="position:absolute; bottom:20px; left:20px; z-index:10000;"
     title="Alternar modo oscuro"
-  >
-    🌙
-  </button>
+  >🌙</button>
 
   <div class="container">
     <!-- Juego -->
