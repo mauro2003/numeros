@@ -4,59 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎯 Adivina el Número con Ranking Online</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(-45deg,#ff9a9e,#fad0c4,#a1c4fd,#c2e9fb);
+      background-size:400% 400%;animation:moverFondo 10s ease infinite;
+      display:flex;justify-content:center;padding:20px;
+    }
+    @keyframes moverFondo{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+    .container{
+      display:grid;grid-template-columns:1fr 1fr;gap:30px;max-width:900px;width:100%;
+    }
+    .card, .panel{
+      background:rgba(255,255,255,0.9);padding:30px;border-radius:15px;
+      box-shadow:0 4px 15px rgba(0,0,0,0.2);animation:fadeIn .6s ease-in;
+    }
+    @keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .card{
+      display:flex;flex-direction:column;
+    }
+    input, select, button{width:100%;padding:10px;margin:10px 0;border:1px solid #ccc;border-radius:8px;font-size:1em}
+    button{background:#007bff;color:#fff;font-weight:bold;cursor:pointer;border:none}
+    button:hover{background:#0056b3}
+    #barraTiempo{height:10px;background:#28a745;transition:width 1s;width:100%;border-radius:5px;margin-top:10px}
+    ul{padding-left:20px;list-style:none}
+    #pantallaMensaje{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:none;
+      align-items:center;justify-content:center;font-size:3em;z-index:9999;text-align:center;}
+    .audio-btn{
+      position:fixed;top:20px;right:20px;width:40px;height:40px;font-size:20px;
+      background:#dc3545;color:#fff;border:none;border-radius:10px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);
+      z-index:10000;display:flex;align-items:center;justify-content:center;
+    }
+    @media(max-width:768px){
+      .container{grid-template-columns:1fr;}
+      .audio-btn{top:10px;right:10px;width:36px;height:36px;font-size:18px;}
+    }
+  </style>
 
-  <!-- Fuente -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap"
-    rel="stylesheet"
-  />
-
-  <!-- CSS externo -->
-  <link rel="stylesheet" href="css/styles.css" />
-
-  <!-- Firebase SDKs -->
+  <!-- Firebase compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <!-- Nombre fijo -->
-  <div
-    style="position:absolute; top:10px; left:20px; color:#fff; text-shadow:1px 1px 2px #000;
-           font-weight:bold; font-size:1.2em; z-index:10000;"
-  >Mauricio Johansen</div>
-
-  <!-- Audio de fondo y controles -->
-  <audio
-    id="musicaFondo"
-    src="musica1.mp3"
-    type="audio/mpeg"
-    loop
-    preload="auto"
-  ></audio>
-  <button
-    id="btnMute"
-    class="audio-btn"
-    style="position:absolute; top:50px; left:20px; z-index:10000;"
-    title="Silenciar / Activar sonido"
-  >🔇</button>
-
-  <!-- Controles de playlist -->
-  <div
-    id="audioControls"
-    style="position:absolute; top:90px; left:20px; display:flex; gap:8px; z-index:10000;"
-  >
-    <button class="audio-btn" id="btnPrev" title="Pista anterior">⏮️</button>
-    <button class="audio-btn" id="btnPlay" title="Play / Pausa">▶️</button>
-    <button class="audio-btn" id="btnNext" title="Pista siguiente">⏭️</button>
+  <div style="position:absolute;top:10px;left:20px;color:#fff;text-shadow:1px 1px 2px #000;font-weight:bold;font-size:1.2em;z-index:10000;">
+    Mauricio Johansen
   </div>
 
-  <!-- Botón modo oscuro -->
-  <button
-    id="btnDarkMode"
-    class="audio-btn"
-    style="position:absolute; bottom:20px; left:20px; z-index:10000;"
-    title="Alternar modo oscuro"
-  >🌙</button>
+  <!-- Audio -->
+  <audio id="musicaFondo" loop>
+    <source src="musica.mp3" type="audio/mpeg">
+  </audio>
+  <button class="audio-btn" id="btnMusica">🔇</button>
 
   <div class="container">
     <!-- Juego -->
@@ -88,202 +88,101 @@
     </div>
   </div>
 
-  <!-- Mensaje secreto -->
   <div id="pantallaMensaje">Sol sucia, bañate 😆</div>
-
-  <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-  <!-- Aquí va todo el JS junto como un módulo -->
-  <script type="module">
-    // --- Firebase init ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
-      authDomain: "adivina-numero-ranking.firebaseapp.com",
-      databaseURL: "https://adivina-numero-ranking-default-rtdb.firebaseio.com",
-      projectId: "adivina-numero-ranking",
-      storageBucket: "adivina-numero-ranking.appspot.com",
-      messagingSenderId: "574261292288",
-      appId: "1:574261292288:web:6d6673c104e0e2aa0857e5"
+  <script>
+    // Firebase init
+    const firebaseConfig={
+      apiKey:"AIzaSyAsbcsyB4h_AdMI_DZnvdql5CqhdzCNdH4",
+      authDomain:"adivina-numero-ranking.firebaseapp.com",
+      databaseURL:"https://adivina-numero-ranking-default-rtdb.firebaseio.com",
+      projectId:"adivina-numero-ranking",
+      storageBucket:"adivina-numero-ranking.appspot.com",
+      messagingSenderId:"574261292288",
+      appId:"1:574261292288:web:6d6673c104e0e2aa0857e5"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const db=firebase.database();
 
-    // --- Ranking ---
-    const dificultadPeso = { facil:1, medio:2, dificil:3, extremo:4 };
-    function cargarRanking() {
-      db.ref('rankings').on('value', snap => {
-        const items = [];
-        snap.forEach(c=>items.push(c.val()));
-        items.sort((a,b)=>{
-          const d = dificultadPeso[a.nivel]-dificultadPeso[b.nivel];
-          if(d) return d;
-          if(a.intentos!==b.intentos) return a.intentos-b.intentos;
-          return (a.timeSpent||0)-(b.timeSpent||0);
+    // Listener ranking en tiempo real
+    db.ref('rankings').orderByChild('intentos').limitToFirst(10)
+      .on('value',snap=>{
+        const ul=document.getElementById('rankingOnline');ul.innerHTML='';
+        snap.forEach(c=>{
+          const {nombre,nivel,intentos}=c.val();
+          const li=document.createElement('li');
+          li.textContent=`${nombre} — ${nivel} — ${intentos} intento(s)`;
+          ul.appendChild(li);
         });
-        renderRanking(items.slice(0,10));
       });
-    }
-    function renderRanking(entries) {
-      const ul = document.getElementById('rankingOnline');
-      if(!ul) return;
-      ul.innerHTML = '';
-      entries.forEach(({nombre,nivel,intentos,timeSpent}) => {
-        const li = document.createElement('li');
-        li.textContent = \`\${nombre} — \${nivel} — \${intentos} intento(s)\` +
-          (timeSpent!=null? \` — \${timeSpent}s\` : '');
-        ul.appendChild(li);
+
+    // Enviar ranking
+    function enviarRanking(nombre,nivel,intentos){
+      db.ref('rankings').push().set({nombre,nivel,intentos,ts:Date.now()},e=>{
+        if(e)console.error(e);
       });
     }
 
-    // --- UI (pantalla secreta, audio y modo oscuro) ---
-    function mostrarPantallaSecreta() {
-      const p = document.getElementById('pantallaMensaje');
-      if(!p) return;
-      p.style.display = 'flex';
-      setTimeout(()=>p.style.display='none',3000);
-    }
-
-    function inicializarAudio() {
-      const audio   = document.getElementById('musicaFondo');
-      const btnMute = document.getElementById('btnMute');
-      const btnPrev = document.getElementById('btnPrev');
-      const btnPlay = document.getElementById('btnPlay');
-      const btnNext = document.getElementById('btnNext');
-      if(!audio||!btnMute||!btnPrev||!btnPlay||!btnNext) return;
-
-      const playlist = [
-        'musica1.mp3',
-        'musica2.mp3',
-        'musica3.mp3',
-        'musica4.mp3'
-      ];
-      let current=0;
-      function actualizarIconoPlay() {
-        btnPlay.textContent = audio.paused?'▶️':'⏸️';
-      }
-      function cargarPista(n, autoplay=false) {
-        current = (n+playlist.length)%playlist.length;
-        audio.src  = playlist[current];
-        audio.load();
-        if(autoplay) audio.play().catch(()=>{});
-        actualizarIconoPlay();
-      }
-      btnMute.addEventListener('click',()=>{
-        audio.muted = !audio.muted;
-        btnMute.textContent = audio.muted?'🔇':'🔊';
-      });
-      btnPrev.addEventListener('click', ()=>cargarPista(current-1,true));
-      btnPlay.addEventListener('click', ()=>{
-        if(audio.paused) audio.play().catch(()=>{});
-        else audio.pause();
-        actualizarIconoPlay();
-      });
-      btnNext.addEventListener('click', ()=>cargarPista(current+1,true));
-      audio.addEventListener('ended', ()=>cargarPista(current+1,true));
-      cargarPista(0,false);
-    }
-
-    function inicializarModoOscuro() {
-      const btn = document.getElementById('btnDarkMode');
-      if(!btn) return;
-      btn.addEventListener('click',()=>{
-        document.body.classList.toggle('dark');
-        localStorage.setItem('modoDark', document.body.classList.contains('dark'));
-      });
-      if(localStorage.getItem('modoDark')==='true') {
-        document.body.classList.add('dark');
-      }
-    }
-
-    // --- Juego ---
-    let secreto, maxNum, intCount, adivinado, tiempoRest, timer;
-    function iniciarJuego() {
-      const nom = document.getElementById('nombreJugador').value.trim();
-      if(!nom) return alert('Ingresá tu nombre');
-      const nivel = document.getElementById('dificultad').value;
-      if(!nivel) return;
+    // Juego
+    let secreto,maxNum,intCount,adivinado,tiempoRest,timer;
+    function iniciarJuego(){
+      const nom=document.getElementById('nombreJugador').value.trim();
+      if(!nom)return alert('Ingresá tu nombre');
+      const nivel=document.getElementById('dificultad').value; if(!nivel)return;
       clearInterval(timer);
-      if(nivel==='facil'){maxNum=10;tiempoRest=60;}
-      else if(nivel==='medio'){maxNum=20;tiempoRest=60;}
-      else if(nivel==='dificil'){maxNum=50;tiempoRest=60;}
-      else {maxNum=100;tiempoRest=30;}
-      secreto   = Math.floor(Math.random()*maxNum)+1;
-      intCount  = 0; adivinado = false;
-      document.getElementById('rango').textContent = \`Entre 1 y \${maxNum}\`;
+      if(nivel=='facil'){maxNum=10;tiempoRest=60;}else if(nivel=='medio'){maxNum=20;tiempoRest=60;}else if(nivel=='dificil'){maxNum=50;tiempoRest=60;}else{maxNum=100;tiempoRest=30;}
+      secreto=Math.floor(Math.random()*maxNum)+1;intCount=0;adivinado=false;
+      document.getElementById('rango').textContent=`Entre 1 y ${maxNum}`;
       ['mensaje','temporizador'].forEach(id=>document.getElementById(id).textContent='');
       document.getElementById('intentos').textContent='Intentos: 0';
-      const inp = document.getElementById('numeroIngresado');
-      inp.value=''; inp.disabled=false;
+      const inp=document.getElementById('numeroIngresado'); inp.value=''; inp.disabled=false;
       document.getElementById('btnAdivinar').disabled=false;
-      inp.focus();
-      iniciarTemporizador(nivel);
+      inp.focus();iniciarTemporizador(nivel);
+      confetti({particleCount:0});
     }
-    function verificar() {
-      if(adivinado) return;
-      const val = +document.getElementById('numeroIngresado').value;
-      if(!val||val<1||val>maxNum) return;
-      intCount++;
-      document.getElementById('intentos').textContent=\`Intentos: \${intCount}\`;
-      if(val===secreto) {
-        adivinado=true; clearInterval(timer);
-        const nom = document.getElementById('nombreJugador').value;
-        const tot = (maxNum===100?30:60), timeSpent = tot-tiempoRest;
-        document.getElementById('mensaje').textContent =
-          \`🎉 ¡\${nom}, acertaste en \${intCount} intentos y \${timeSpent}s!\`;
-        enviarRanking(nom,
-          document.getElementById('dificultad').value,
-          intCount, timeSpent
-        );
-        mostrarPantallaSecreta();
+    function verificar(){
+      if(adivinado)return;
+      const val=+document.getElementById('numeroIngresado').value;
+      if(!val||val<1||val>maxNum)return;
+      intCount++;document.getElementById('intentos').textContent=`Intentos: ${intCount}`;
+      if(val===secreto){adivinado=true;clearInterval(timer);
+        const nom=document.getElementById('nombreJugador').value;
+        document.getElementById('mensaje').textContent=`🎉 ¡${nom}, acertaste en ${intCount}!`;
+        confetti({particleCount:150,spread:100,origin:{y:0.6}});
+        enviarRanking(nom,document.getElementById('dificultad').value,intCount);
       } else {
-        document.getElementById('mensaje').textContent =
-          val<secreto?'📉 Muy bajo':'📈 Muy alto';
+        document.getElementById('mensaje').textContent=val<secreto?'📉 Muy bajo':'📈 Muy alto';
       }
     }
-    function iniciarTemporizador(nivel) {
-      if(nivel==='facil') return;
-      const barra = document.getElementById('barraTiempo');
-      barra.style.width='100%';
-      timer = setInterval(()=>{
-        tiempoRest--;
-        document.getElementById('temporizador').textContent=\`⏳ \${tiempoRest}s\`;
-        const tot = (nivel==='extremo'?30:60);
-        barra.style.width=\`\${(tiempoRest/tot)*100}%\`;
-        if(tiempoRest<=0){
-          clearInterval(timer);
-          document.getElementById('mensaje').textContent=\`⛔ Se acabó el tiempo, era \${secreto}\`;
-          document.getElementById('btnAdivinar').disabled=true;
-        }
-      },1000);
+    function iniciarTemporizador(nivel){if(nivel=='facil')return;document.getElementById('barraTiempo').style.width='100%';timer=setInterval(()=>{
+      tiempoRest--;document.getElementById('temporizador').textContent=`⏳ ${tiempoRest}s`;
+      const tot=nivel=='extremo'?30:60;document.getElementById('barraTiempo').style.width=`${(tiempoRest/tot)*100}%`;
+      if(tiempoRest<=0){clearInterval(timer);
+        document.getElementById('mensaje').textContent=`⛔ Se acabó el tiempo, era ${secreto}`;
+        document.getElementById('btnAdivinar').disabled=true;
+      }},1000);
     }
-    function reiniciar(){clearInterval(timer); iniciarJuego();}
-    function cambiarJugador(){
-      clearInterval(timer);
+    function reiniciar(){clearInterval(timer);iniciarJuego();}
+    function cambiarJugador(){clearInterval(timer);
       ['nombreJugador','dificultad','numeroIngresado'].forEach(id=>document.getElementById(id).value='');
       ['numeroIngresado','btnAdivinar'].forEach(id=>document.getElementById(id).disabled=true);
-      ['mensaje','temporizador','rango','intentos'].forEach(id=>
-        document.getElementById(id).textContent = id==='intentos'?'Intentos: 0':''
-      );
-    }
-    function enviarRanking(nombre,nivel,intentos,timeSpent){
-      db.ref('rankings').push().set({nombre,nivel,intentos,timeSpent,ts:Date.now()});
+      ['mensaje','temporizador','rango','intentos'].forEach(id=>document.getElementById(id).textContent=id==='intentos'?'Intentos: 0':'');
     }
 
-    // --- Main ---
+    // Audio toggle
+    function toggleMusica(){
+      const m=document.getElementById('musicaFondo'),b=document.getElementById('btnMusica');
+      if(m.paused){m.play();b.textContent='🔊';b.style.background='#28a745';}
+      else{m.pause();b.textContent='🔇';b.style.background='#dc3545';}
+    }
+
+    // Bind events
     document.addEventListener('DOMContentLoaded',()=>{
-      document.getElementById('dificultad')
-              .addEventListener('change', iniciarJuego);
-      document.getElementById('btnAdivinar')
-              .addEventListener('click', verificar);
-      document.getElementById('btnReiniciar')
-              .addEventListener('click', reiniciar);
-      document.getElementById('btnCambiar')
-              .addEventListener('click', cambiarJugador);
-
-      cargarRanking();
-      inicializarModoOscuro();
-      inicializarAudio();
+      document.getElementById('dificultad').addEventListener('change',iniciarJuego);
+      document.getElementById('btnAdivinar').addEventListener('click',verificar);
+      document.getElementById('btnReiniciar').addEventListener('click',reiniciar);
+      document.getElementById('btnCambiar').addEventListener('click',cambiarJugador);
+      document.getElementById('btnMusica').addEventListener('click',toggleMusica);
     });
   </script>
 </body>
